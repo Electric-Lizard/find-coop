@@ -32,12 +32,15 @@ import {
 import {
   // Import methods that your schema can use to interact with your database
   User,
-  Widget,
+  Room,
   getUser,
   getViewer,
-  getWidget,
-  getWidgets,
-} from './database';
+  getRoom,
+  getRooms,
+  removeRoom,
+} from './store/store';
+const app = {id: 1};
+let getApp = () => (app);
 
 /**
  * We get the node interface and field from the Relay library.
@@ -50,8 +53,8 @@ var {nodeInterface, nodeField} = nodeDefinitions(
     var {type, id} = fromGlobalId(globalId);
     if (type === 'User') {
       return getUser(id);
-    } else if (type === 'Widget') {
-      return getWidget(id);
+    } else if (type === 'Room') {
+      return getRoom(id);
     } else {
       return null;
     }
@@ -59,56 +62,85 @@ var {nodeInterface, nodeField} = nodeDefinitions(
   (obj) => {
     if (obj instanceof User) {
       return userType;
-    } else if (obj instanceof Widget)  {
-      return widgetType;
+    } else if (obj instanceof Room)  {
+      return roomType;
     } else {
       return null;
     }
   }
 );
 
-/**
- * Define your own types here
- */
+//~ Data types ================================================================
 
 var userType = new GraphQLObjectType({
   name: 'User',
   description: 'A person who uses our app',
   fields: () => ({
     id: globalIdField('User'),
-    widgets: {
-      type: widgetConnection,
-      description: 'A person\'s collection of widgets',
-      args: connectionArgs,
-      resolve: (_, args) => connectionFromArray(getWidgets(), args),
-    },
   }),
   interfaces: [nodeInterface],
 });
 
-var widgetType = new GraphQLObjectType({
-  name: 'Widget',
-  description: 'A shiny widget',
+let roomType = new GraphQLObjectType({
+  name: 'Room',
+  description: 'room for lobby',
   fields: () => ({
-    id: globalIdField('Widget'),
-    name: {
+    id: globalIdField('Room'),
+    title: {
       type: GraphQLString,
-      description: 'The name of the widget',
     },
+    game: {
+      type: GraphQLString,
+    },
+  }),
+  interfaces: [nodeInterface]
+});
+
+var appType = new GraphQLObjectType({
+  name: 'App',
+  description: 'Main data provider, a la "root" (under another root)',
+  fields:() => ({
+    id: globalIdField('App'),
+    rooms: {
+      type: roomConnection,
+      args: connectionArgs,
+      resolve: (_, args) => connectionFromArray(getRooms(), args),
+    }
   }),
   interfaces: [nodeInterface],
 });
 
-/**
- * Define your own connection types here
- */
-var {connectionType: widgetConnection} =
-  connectionDefinitions({name: 'Widget', nodeType: widgetType});
+//~ Connections ===============================================================
+//
+var {connectionType: roomConnection} =
+  connectionDefinitions({name: 'Room', nodeType: roomType});
 
-/**
- * This is the type that will be the root of our query,
- * and the entry point into our schema.
- */
+//~ Mutations =================================================================
+
+var deleteRoomMutation = mutationWithClientMutationId({
+  name: 'DeleteRoom',
+  inputFields: {
+    id: {type: new GraphQLNonNull(GraphQLID)},
+  },
+  outputFields: {
+    deletedId: {
+      type: new GraphQLNonNull(GraphQLID),
+      resolve: ({id}) => id,
+    },
+    app: {
+      type: appType,
+      resolve: getApp,
+    },
+  },
+  mutateAndGetPayload: ({id}) => {
+    const {id: todoId} = fromGlobalId(id);
+    removeRoom(todoId);
+    return {id};
+  }
+});
+
+//~ Root structure ============================================================
+
 var queryType = new GraphQLObjectType({
   name: 'Query',
   fields: () => ({
@@ -118,26 +150,22 @@ var queryType = new GraphQLObjectType({
       type: userType,
       resolve: () => getViewer(),
     },
+    app: {
+      type: appType,
+      args: connectionArgs,
+      resolve:() => getApp(),
+    },
   }),
 });
 
-/**
- * This is the type that will be the root of our mutations,
- * and the entry point into performing writes in our schema.
- */
 var mutationType = new GraphQLObjectType({
   name: 'Mutation',
   fields: () => ({
-    // Add your own mutations here
+    deleteRoom: deleteRoomMutation,
   })
 });
 
-/**
- * Finally, we construct our schema (whose starting query type is the query
- * type we defined above) and export it.
- */
 export var Schema = new GraphQLSchema({
   query: queryType,
-  // Uncomment the following after adding some mutation fields:
-  // mutation: mutationType
+  mutation: mutationType,
 });

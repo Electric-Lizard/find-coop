@@ -1,16 +1,22 @@
 import React from 'react';
 import Relay from 'react-relay';
+import UserInfo from './UserInfo';
+import {Link} from 'react-router';
 
 class App extends React.Component {
   render() {
+    const {children, viewer} = this.props;
     return (
       <div>
         <h1>Widget list</h1>
-        <ul>
-          {this.props.viewer.widgets.edges.map(edge =>
-            <li key={edge.node.id}>{edge.node.name} (ID: {edge.node.id})</li>
-          )}
-        </ul>
+        <h2>
+          <Link to={'you'}>User info</Link>
+          |
+          <Link to={'rooms'}>Room list</Link>
+        </h2>
+        <div>
+          {children}
+        </div>
       </div>
     );
   }
@@ -20,14 +26,7 @@ export default Relay.createContainer(App, {
   fragments: {
     viewer: () => Relay.QL`
       fragment on User {
-        widgets(first: 10) {
-          edges {
-            node {
-              id,
-              name,
-            },
-          },
-        },
+        ${UserInfo.getFragment('viewer')},
       }
     `,
   },

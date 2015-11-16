@@ -2,7 +2,7 @@ import express from 'express';
 import graphQLHTTP from 'express-graphql';
 import path from 'path';
 import webpack from 'webpack';
-import WebpackDevServer from 'webpack-dev-server';
+import 'express';
 import {Schema} from './data/schema';
 
 const APP_PORT = 3000;
@@ -32,16 +32,26 @@ var compiler = webpack({
       }
     ]
   },
-  output: {filename: 'app.js', path: '/'}
+  output: {filename: 'app.js', path: './public/js'},
+  debug: true,
+  devtool: 'source-map',
 });
-var app = new WebpackDevServer(compiler, {
-  contentBase: '/public/',
-  proxy: {'/graphql': `http://localhost:${GRAPHQL_PORT}`},
-  publicPath: '/js/',
-  stats: {colors: true}
-});
+
+var app = express();
 // Serve static resources
-app.use('/', express.static(path.resolve(__dirname, 'public')));
+app.use(express.static(path.resolve(__dirname, 'public')));
+app.get('/:path', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
+})
+app.use('/graphql', graphQLServer);
+
 app.listen(APP_PORT, () => {
   console.log(`App is now running on http://localhost:${APP_PORT}`);
+});
+compiler.watch({ // watch options:
+    aggregateTimeout: 300, // wait so long for more changes
+    poll: true // use polling instead of native watchers
+    // pass a number to set the polling interval
+}, function(err, stats) {
+  console.log(err);
 });
