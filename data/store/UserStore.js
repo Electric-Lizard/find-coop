@@ -1,18 +1,15 @@
-import {CollectionItem, CollectionStore} from './CollectionStore';
+import {CollectionItem, CollectionStoreProto} from './CollectionStore';
 
 
 class User extends CollectionItem {
-  static fields = Object.assign({}, CollectionItem, {
-    username: {
-      required: true
-    },
-    password: {
-      required: true
-    }
+  static fields = Object.assign({}, CollectionItem.fields, {
+    username: {},
+    password: {},
   });
 }
-class UserStore extends CollectionStore {
+class UserStoreProto extends CollectionStoreProto {
   static modelProto = User;
 }
 
-export {User, UserStore};
+let UserStore = new UserStoreProto();
+export {User, UserStore, UserStoreProto};

@@ -9,9 +9,6 @@ let routes = (
     <Route
       path="/"
       component={App}
-      queries={{
-        viewer: queries.viewer
-      }}
     >
     <Route
       path="rooms"
@@ -23,9 +20,6 @@ let routes = (
     <Route
       path="you"
       component={UserInfo}
-      queries={{
-        viewer: queries.viewer
-      }}
     />
     </Route>
   );

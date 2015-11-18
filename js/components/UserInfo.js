@@ -6,7 +6,7 @@ class UserInfo extends React.Component {
   render() {
     return (
         <Link to={`/rooms`}>
-          You are: {this.props.viewer.id}
+        You are nice
         </Link>
         );
   }
@@ -14,10 +14,6 @@ class UserInfo extends React.Component {
 
 export default Relay.createContainer(UserInfo, {
   fragments: {
-    viewer: () => Relay.QL`
-      fragment on User {
-        id
-      }
-    `,
+
   }
 });

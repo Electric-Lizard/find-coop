@@ -29,18 +29,34 @@ import {
   nodeDefinitions,
 } from 'graphql-relay';
 
-import {
-  // Import methods that your schema can use to interact with your database
-  User,
-  Room,
-  getUser,
-  getViewer,
-  getRoom,
-  getRooms,
-  removeRoom,
-} from './store/store';
+import stores from './stores';
 const app = {id: 1};
-let getApp = () => (app);
+const getApp = () => (app);
+
+//~ Resolving =================================================================
+
+/**
+ * Map associates GraphQL type with data store
+ */
+const typeStoreMap = {
+  'User': stores.user,
+  'Room': stores.room,
+};
+
+/**
+ * Resolves GraphQL type to its data store
+ */
+const resolveType = (type) => typeStoreMap[type] || null;
+
+const storeGraphQLTypeMap = new Map();
+Object.keys(typeStoreMap).forEach((gType) => {
+  storeGraphQLTypeMap.set(resolveType(gType)._itemType(), gType);
+});
+
+/**
+ * Resolves object to its GraphQL type
+ */
+const resolveObject = obj => storeGraphQLTypeMap.get(obj.constructor) || null;
 
 /**
  * We get the node interface and field from the Relay library.
@@ -48,31 +64,17 @@ let getApp = () => (app);
  * The first method defines the way we resolve an ID to its object.
  * The second defines the way we resolve an object to its GraphQL type.
  */
-var {nodeInterface, nodeField} = nodeDefinitions(
+const {nodeInterface, nodeField} = nodeDefinitions(
   (globalId) => {
     var {type, id} = fromGlobalId(globalId);
-    if (type === 'User') {
-      return getUser(id);
-    } else if (type === 'Room') {
-      return getRoom(id);
-    } else {
-      return null;
-    }
+    return resolveType(type).getItem(id);
   },
-  (obj) => {
-    if (obj instanceof User) {
-      return userType;
-    } else if (obj instanceof Room)  {
-      return roomType;
-    } else {
-      return null;
-    }
-  }
+  (obj) => resolveObject(obj)
 );
 
 //~ Data types ================================================================
 
-var userType = new GraphQLObjectType({
+const userType = new GraphQLObjectType({
   name: 'User',
   description: 'A person who uses our app',
   fields: () => ({
@@ -104,7 +106,7 @@ var appType = new GraphQLObjectType({
     rooms: {
       type: roomConnection,
       args: connectionArgs,
-      resolve: (_, args) => connectionFromArray(getRooms(), args),
+      resolve: (_, args) => connectionFromArray(stores.room.getAll(), args),
     }
   }),
   interfaces: [nodeInterface],
@@ -133,8 +135,8 @@ var deleteRoomMutation = mutationWithClientMutationId({
     },
   },
   mutateAndGetPayload: ({id}) => {
-    const {id: todoId} = fromGlobalId(id);
-    removeRoom(todoId);
+    const {id: roomId} = fromGlobalId(id);
+    if (!stores.room.deleteUnique(roomId)) id = false;
     return {id};
   }
 });
@@ -145,11 +147,6 @@ var queryType = new GraphQLObjectType({
   name: 'Query',
   fields: () => ({
     node: nodeField,
-    // Add your own root fields here
-    viewer: {
-      type: userType,
-      resolve: () => getViewer(),
-    },
     app: {
       type: appType,
       args: connectionArgs,

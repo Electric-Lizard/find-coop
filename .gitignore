@@ -7,3 +7,4 @@ data/schema.graphql
 semantic/dist
 public/semantic
 *.map
+*.bak

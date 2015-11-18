@@ -5,7 +5,7 @@ import {Link} from 'react-router';
 
 class App extends React.Component {
   render() {
-    const {children, viewer} = this.props;
+    const {children} = this.props;
     return (
       <div>
         <h1>Widget list</h1>
@@ -24,10 +24,6 @@ class App extends React.Component {
 
 export default Relay.createContainer(App, {
   fragments: {
-    viewer: () => Relay.QL`
-      fragment on User {
-        ${UserInfo.getFragment('viewer')},
-      }
-    `,
+
   },
 });

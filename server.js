@@ -32,7 +32,7 @@ var compiler = webpack({
       }
     ]
   },
-  output: {filename: 'app.js', path: './public/js'},
+  output: {filename: 'app.js', path: path.resolve(__dirname, 'public', 'js')},
   debug: true,
   devtool: 'source-map',
 });
@@ -42,15 +42,15 @@ var app = express();
 app.use(express.static(path.resolve(__dirname, 'public')));
 app.get('/:path', (req, res) => {
   res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
-})
+});
 app.use('/graphql', graphQLServer);
 
 app.listen(APP_PORT, () => {
   console.log(`App is now running on http://localhost:${APP_PORT}`);
 });
 compiler.watch({ // watch options:
-    aggregateTimeout: 300, // wait so long for more changes
-    poll: true // use polling instead of native watchers
+  aggregateTimeout: 300, // wait so long for more changes
+  //poll: true // use polling instead of native watchers
     // pass a number to set the polling interval
 }, function(err, stats) {
   console.log(err);
