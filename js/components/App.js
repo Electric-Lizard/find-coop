@@ -1,19 +1,15 @@
+import Navigation from './Navigation';
+
 import React from 'react';
 import Relay from 'react-relay';
-import UserInfo from './UserInfo';
-import {Link} from 'react-router';
 
 class App extends React.Component {
   render() {
-    const {children} = this.props;
+    const {children, app, history} = this.props;
     return (
       <div>
-        <h1>Widget list</h1>
-        <h2>
-          <Link to={'you'}>User info</Link>
-          |
-          <Link to={'rooms'}>Room list</Link>
-        </h2>
+        <h1>Title here</h1>
+        <Navigation {...{app, history}} />
         <div>
           {children}
         </div>
@@ -24,6 +20,10 @@ class App extends React.Component {
 
 export default Relay.createContainer(App, {
   fragments: {
-
+    app: () => Relay.QL`
+      fragment on App {
+        ${Navigation.getFragment('app')},
+      }
+    `
   },
 });

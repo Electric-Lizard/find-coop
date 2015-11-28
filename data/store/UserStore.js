@@ -1,15 +1,20 @@
-import {CollectionItem, CollectionStoreProto} from './CollectionStore';
+import {CollectionItem, CollectionStore} from 'graphql-store';
+import GraphQLUserType from '../schema/types/User';
 
 
 class User extends CollectionItem {
-  static fields = Object.assign({}, CollectionItem.fields, {
-    username: {},
-    password: {},
-  });
+  static graphQLType = GraphQLUserType;
 }
-class UserStoreProto extends CollectionStoreProto {
-  static modelProto = User;
+class UserStore extends CollectionStore {
+  static itemType = User;
+
+  constructor(props) {
+    super(props);
+    this.createItem({
+      username: 'admin',
+      password: 'admin',
+    });
+  }
 }
 
-let UserStore = new UserStoreProto();
-export {User, UserStore, UserStoreProto};
+export {User, UserStore};

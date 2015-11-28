@@ -1,18 +1,17 @@
 import React from 'react';
 import Relay from 'react-relay';
-import RoomItem from './RoomItem';
+import UserItem from './UserItem';
 
-
-class RoomList extends React.Component {
+class UserList extends React.Component {
   render() {
-    let rooms = this.props.app.rooms.edges.map(e => e.node);
+    let users = this.props.app.users.edges.map(e => e.node);
     let {app} = this.props;
     return (
       <div>
         <h1>Game list</h1>
         <div className="ui relaxed divided list selection">
-          {rooms.map(room =>
-              <RoomItem room={room} key={room.id} app={app}/>
+          {users.map(user =>
+              <UserItem user={user} key={user.id} app={app}/>
           )}
         </div>
       </div>
@@ -20,22 +19,21 @@ class RoomList extends React.Component {
   }
 }
 
-export default Relay.createContainer(RoomList, {
+export default Relay.createContainer(UserList, {
   initialVariables: {
     count: 10
   },
   fragments: {
     app: () => Relay.QL`
       fragments on App {
-        rooms(first: $count) {
+        users(first: $count) {
           edges {
             node {
               id,
-              ${RoomItem.getFragment('room')},
+              ${UserItem.getFragment('user')},
             }
           }
         },
-        ${RoomItem.getFragment('app')},
       }
     `,
   },

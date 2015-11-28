@@ -1,3 +1,8 @@
 /*******************************
          Site Overrides
 *******************************/
+@site       : 'material';
+@reset      : 'resetcss';
+
+@primaryColor: @blue;
+@secondaryColoe: @green;

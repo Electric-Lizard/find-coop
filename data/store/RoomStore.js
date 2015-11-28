@@ -1,30 +1,24 @@
-import {CollectionItem, CollectionStoreProto} from './CollectionStore';
-
+import {CollectionItem, CollectionStore} from 'graphql-store';
+import GraphQLRoomType from '../schema/types/Room';
 
 class Room extends CollectionItem {
-  static fields = Object.assign({}, CollectionItem.fields, {
-    title: {},
-    game: {},
-  });
+  static graphQLType = GraphQLRoomType;
 }
-class RoomStoreProto extends CollectionStoreProto {
+class RoomStore extends CollectionStore {
   static itemType = Room;
 
-  constructor() {
-    super();
-    this.saveItem(new Room({id: '1', title: 'Find coop', game: 'minecraft'}));
-    this.saveItem(new Room({
-      id: '2',
+  constructor(props) {
+    super(props);
+    this.createItem({title: 'Find coop', game: 'minecraft'});
+    this.createItem({
       title: 'no one wants to play with me',
       game: 'dwarf fortress'
-    }));
-    this.saveItem(new Room({
-      id: '3',
+    });
+    this.createItem({
       title: 'Pretty game',
       game: 'dota 2',
-    }));
+    });
   }
 }
 
-let RoomStore = new RoomStoreProto();
-export {Room, RoomStore, RoomStoreProto};
+export {Room, RoomStore};
