@@ -6,7 +6,7 @@
     "type": "git",
     "url": "git+https://github.com/facebook/relay-starter-kit.git"
   },
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "start": "(babel-node ./server.js & gulp watch)",
     "debug": "babel-node debug ./server.js",
